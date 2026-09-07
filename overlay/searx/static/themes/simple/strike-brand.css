@@ -172,16 +172,197 @@
 
 /* Results page.
  *
- * The sidebar (#sidebar: "Response time" engine table + "Download results"
- * JSON link) is debug/operator info, not something a searcher needs open on
- * every query -- it added a second column of near-empty collapsed <details>
- * for no benefit. Dropped entirely; #urls takes the freed width. */
-#sidebar {
+ * #sidebar carries two different things SearXNG bundles together: operator
+ * plumbing (#engines_msg's response-time table, #apis's JSON download link)
+ * and real content (a Wikipedia-style #infoboxes panel, #suggestions). The
+ * first pass here hid the whole element, which threw out the infobox along
+ * with the plumbing. Correct version: hide only the plumbing, and give the
+ * rest a proper right-hand rail next to the results instead of a second
+ * column of collapsed <details>. */
+#engines_msg,
+#apis,
+#sidebar-end-collapsible {
   display: none;
 }
-#urls {
-  max-width: 720px;
+#results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+  max-width: 980px;
   margin: 0 auto;
+}
+#urls {
+  order: 1;
+  flex: 1 1 480px;
+  min-width: 0;
+}
+#sidebar {
+  order: 2;
+  flex: 0 0 280px;
+}
+/* No infobox and no suggestions left it an empty rail -- most searches have
+ * neither, so it should take no space rather than sit there as a blank box. */
+#sidebar:not(:has(#infoboxes)):not(:has(#suggestions)) {
+  display: none;
+}
+#backToTop,
+#pagination {
+  flex-basis: 100%;
+}
+
+#infoboxes,
+#suggestions,
+#corrections {
+  background: #161619;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: .75rem;
+}
+#infoboxes .title,
+#suggestions .title,
+#corrections h4 {
+  margin-top: 0;
+  font-size: 1em;
+  color: #9a9aa2;
+  font-weight: 600;
+}
+#infoboxes .infobox img {
+  border-radius: 8px;
+  max-width: 100%;
+}
+#infoboxes .infobox .attributes dl {
+  display: flex;
+  gap: .4rem;
+  margin: .3rem 0;
+  font-size: .9em;
+}
+#infoboxes .infobox .attributes dt {
+  color: #5d5d66;
+}
+#infoboxes .infobox .urls {
+  margin-top: .5rem;
+}
+#suggestions ul.wrapper,
+#corrections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+#suggestions ul.wrapper {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+#suggestions .suggestion,
+#corrections input[type="submit"] {
+  background: #1c1c21;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 999px;
+  padding: .35rem .8rem;
+  font-size: .88em;
+  color: #f0f0f2;
+  cursor: pointer;
+  transition: border-color .12s ease, background-color .12s ease;
+}
+#suggestions .suggestion:hover,
+#corrections input[type="submit"]:hover {
+  border-color: #4f7cff;
+  background: #232329;
+}
+
+/* Answers (calculator results, unit conversions, etc.): the one box that
+ * genuinely deserves top billing over the first result. */
+#answers {
+  background: #1c1c21;
+  border: 1px solid rgba(79,124,255,.35);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  order: 0;
+  flex-basis: 100%;
+}
+#answers .title {
+  margin: 0 0 .35rem;
+  font-size: .85em;
+  color: #8fb0ff;
+  font-weight: 600;
+}
+
+/* "No results" state: SearXNG's default renders this as unstyled text with
+ * a bold "Sorry!" -- give it the same card treatment as everything else, and
+ * drop the emphasis on "Sorry!" since the list of things to try does the
+ * actual work. */
+.dialog-error-block {
+  background: #161619;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.dialog-error-block ul {
+  margin: .5rem 0 0;
+  padding-left: 1.2rem;
+  color: #c7c7cc;
+}
+.dialog-error-block li {
+  margin-bottom: .3rem;
+}
+
+/* Pagination: flat submit buttons by default, no relation to the rest of
+ * the UI's button language. */
+#pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  margin-top: 1.5rem;
+}
+#pagination button,
+#pagination input[type="submit"],
+#pagination input[type="button"] {
+  background: #1c1c21;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 8px;
+  color: #f0f0f2;
+  padding: .5rem .9rem;
+  cursor: pointer;
+  transition: border-color .12s ease, background-color .12s ease;
+}
+#pagination button:hover,
+#pagination input[type="submit"]:hover {
+  border-color: #4f7cff;
+  background: #232329;
+}
+#pagination .page_number_current {
+  background: #4f7cff;
+  border-color: #4f7cff;
+  color: #fff;
+  cursor: default;
+}
+.numbered_pagination {
+  display: flex;
+  gap: .25rem;
+}
+
+#backToTop {
+  text-align: center;
+  margin-top: 1rem;
+}
+#backToTop a {
+  display: inline-flex;
+  color: #5d5d66;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 999px;
+  padding: .4rem;
+  transition: color .12s ease, border-color .12s ease;
+}
+#backToTop a:hover {
+  color: #8fb0ff;
+  border-color: #4f7cff;
 }
 
 /* Category tabs: Strike only surfaces the four that a general search user
@@ -350,4 +531,106 @@ fieldset input[type="password"] {
 #search_form input[type="submit"] {
   border-radius: 8px;
   font-weight: 600;
+}
+
+/* Type.
+ *
+ * Matches the rest of the Ventryx family (browser-overlay/strike/ and
+ * Orbital's design system): a serif display face for the handful of large
+ * headings that carry the brand's voice, the system UI font everywhere else.
+ * Neither is a webfont load -- both ship with Windows/macOS/most Linux
+ * desktops, so there's no extra request and no flash of unstyled text. */
+body {
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+.index .title h1,
+body.preferences_endpoint > h1,
+.info-page h1,
+main .center h1 {
+  font-family: 'Sitka Display', 'Sitka Heading', Georgia, serif;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+/* Preferences page heading. */
+body.preferences_endpoint > h1 {
+  margin-bottom: .25rem;
+}
+.info-page {
+  max-width: 680px;
+  margin: 1.5rem auto 0;
+  line-height: 1.6;
+  color: #c7c7cc;
+}
+.info-page a {
+  color: #8fb0ff;
+}
+ul.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+  list-style: none;
+  padding: 0;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  margin: 0 0 1.5rem;
+}
+ul.tabs li {
+  margin: 0;
+}
+ul.tabs a {
+  display: inline-block;
+  padding: .6rem 1rem;
+  border-radius: 8px 8px 0 0;
+  color: #9a9aa2;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color .12s ease, color .12s ease;
+}
+ul.tabs a:hover {
+  background: #1c1c21;
+  color: #f0f0f2;
+}
+ul.tabs a.active {
+  color: #8fb0ff;
+  box-shadow: inset 0 -2px 0 #4f7cff;
+}
+
+/* 404 and other bare "center" message pages. */
+main .center {
+  max-width: 480px;
+  margin: 3rem auto 0;
+  text-align: center;
+}
+main .center h1 {
+  font-family: 'Sitka Display', 'Sitka Heading', Georgia, serif;
+  letter-spacing: -0.02em;
+  margin-bottom: .5rem;
+}
+main .center a {
+  color: #8fb0ff;
+}
+
+/* Autocomplete dropdown: unstyled by default, floats with no separation
+ * from the search box behind it. */
+.autocomplete {
+  background: #161619;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  overflow: hidden;
+  margin-top: .35rem;
+}
+.autocomplete ul {
+  list-style: none;
+  margin: 0;
+  padding: .3rem;
+}
+.autocomplete li {
+  padding: .5rem .75rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.autocomplete li.active,
+.autocomplete li:hover {
+  background: #232329;
 }
