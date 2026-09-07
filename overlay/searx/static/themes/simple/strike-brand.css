@@ -174,49 +174,28 @@
  *
  * #sidebar carries two different things SearXNG bundles together: operator
  * plumbing (#engines_msg's response-time table, #apis's JSON download link)
- * and real content (a Wikipedia-style #infoboxes panel, #suggestions). The
- * first pass here hid the whole element, which threw out the infobox along
- * with the plumbing. Correct version: hide only the plumbing, and give the
- * rest a proper right-hand rail next to the results instead of a second
- * column of collapsed <details>. */
+ * and real content (a Wikipedia-style #infoboxes panel, #suggestions).
+ *
+ * Second correction here: the first attempt at splitting those two also
+ * replaced #results' `display: grid` with a hand-rolled flex layout, which
+ * fought SearXNG's own layout more than it helped. That grid is already
+ * responsive (it's what keeps the results column aligned under the search
+ * bar via --center-page-width) and already reserves a sidebar column next
+ * to #urls, correctly, for infobox/suggestions content -- the flex rewrite
+ * broke it outright: #backToTop and #pagination had no explicit `order`, so
+ * they defaulted to the same order as #answers/#corrections and rendered
+ * *above* the results instead of below them. Leave the vendor grid alone;
+ * only hide the two plumbing panels and skin the content that remains. */
 #engines_msg,
 #apis,
 #sidebar-end-collapsible {
   display: none;
 }
-#results {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  align-items: flex-start;
-  max-width: 980px;
-  margin: 0 auto;
-}
-/* Image/video results are a grid, not a column of text -- SearXNG's own CSS
- * already lays #urls out as a grid for these templates, and 980px would
- * cramp it to three or four thumbnails across instead of using the page.
- * These templates also never pair with the sidebar rail in practice. */
-#results.only_template_images,
-#results.only_template_videos {
-  max-width: none;
-}
-#urls {
-  order: 1;
-  flex: 1 1 480px;
-  min-width: 0;
-}
-#sidebar {
-  order: 2;
-  flex: 0 0 280px;
-}
-/* No infobox and no suggestions left it an empty rail -- most searches have
- * neither, so it should take no space rather than sit there as a blank box. */
+/* No infobox and no suggestions left #sidebar empty (its only children were
+ * the two hidden plumbing panels) -- collapse it rather than reserve a
+ * blank column next to every plain-text query. */
 #sidebar:not(:has(#infoboxes)):not(:has(#suggestions)) {
   display: none;
-}
-#backToTop,
-#pagination {
-  flex-basis: 100%;
 }
 
 #infoboxes,
@@ -288,8 +267,6 @@
   border-radius: 12px;
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
-  order: 0;
-  flex-basis: 100%;
 }
 #answers .title {
   margin: 0 0 .35rem;
@@ -641,4 +618,12 @@ main .center a {
 .autocomplete li.active,
 .autocomplete li:hover {
   background: #232329;
+}
+
+/* The "About" link opens SearXNG's own about page: project history, its
+ * Matrix community, links to SearXNG's own repo and translation project --
+ * none of it is about Strike, and it's not content worth adapting either.
+ * Dropped. The page is still reachable at /info/en/about directly. */
+.link_on_top_about {
+  display: none;
 }
