@@ -192,6 +192,14 @@
   max-width: 980px;
   margin: 0 auto;
 }
+/* Image/video results are a grid, not a column of text -- SearXNG's own CSS
+ * already lays #urls out as a grid for these templates, and 980px would
+ * cramp it to three or four thumbnails across instead of using the page.
+ * These templates also never pair with the sidebar rail in practice. */
+#results.only_template_images,
+#results.only_template_videos {
+  max-width: none;
+}
 #urls {
   order: 1;
   flex: 1 1 480px;
