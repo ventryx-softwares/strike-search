@@ -85,23 +85,35 @@ ui:
 # scrapers live. Left enabled they do not error, they return nothing, and the
 # whole instance looks broken while actually being rate-limited.
 #
-# The engines below tolerate datacenter IPs. Google and Bing are disabled
-# rather than removed so they are easy to re-enable on infrastructure where
-# they work, for example a residential connection.
+# Re-disabled google/duckduckgo/brave/startpage on 2026-09-07: the engine
+# stats panel showed all four suspended or CAPTCHA'd on Railway's IP range
+# (the exact failure this comment already predicted for google/bing), and a
+# suspended engine still costs a request_timeout's worth of wall time on
+# every single search for zero results. On the free trial's CPU/RAM budget
+# that was a meaningful chunk of "why is this slow." google was briefly
+# re-enabled by hand; re-disabling it isn't undoing that on a whim, it's
+# because the CAPTCHA is still there. google cse (below, inherited from
+# SearXNG's own defaults, not listed here) is unaffected and is already
+# carrying most real results -- this only removes the scrapers that were
+# failing anyway.
+#
+# The engines below tolerate datacenter IPs. The rest are disabled rather
+# than removed so they are easy to re-enable on infrastructure where they
+# work, for example a residential connection.
 
 engines:
   - name: google
-    disabled: false
+    disabled: true
   - name: bing
     disabled: true
-
   - name: duckduckgo
-    disabled: false
+    disabled: true
   - name: brave
-    disabled: false
-  - name: mojeek
-    disabled: false
+    disabled: true
   - name: startpage
+    disabled: true
+
+  - name: mojeek
     disabled: false
   - name: wikipedia
     disabled: false
@@ -116,9 +128,16 @@ engines:
 #
 # What this does and does not do, because the difference matters: it reorders
 # results the engines already returned. It cannot inject ventryx.xyz if no
-# engine surfaced it. If the site is not indexed by DuckDuckGo, Brave or
-# Mojeek, boosting has nothing to boost, and the fix is indexing rather than
-# configuration.
+# engine surfaced it. With duckduckgo/brave disabled above (see engines:),
+# the sources left that could surface it are google cse, mojeek, wikipedia
+# and wikidata -- if none of those have it indexed, boosting has nothing to
+# boost, and the fix is indexing rather than configuration.
+#
+# Unrelated sites sharing the name were crowding it out on the observed
+# "ventryx" query (ventryxtech.com, ventryx.org, ventryxmedia.com, and a
+# Companies House filing all outranked it) -- demoted below, so if
+# ventryx.xyz is anywhere in the result set it surfaces above the noise
+# rather than getting buried by it.
 #
 # Boosting your own site on your own instance is fine. Presenting it as an
 # organic top result when it is placed there by the operator is where that
@@ -128,14 +147,25 @@ engines:
 hostnames:
   high_priority:
     - '(.*\.)?ventryx\.xyz$'
+  low_priority:
+    - '(.*\.)?ventryxtech\.com$'
+    - '(.*\.)?ventryx\.org$'
+    - '(.*\.)?ventryxmedia\.com$'
+    - '(.*\.)?company-information\.service\.gov\.uk$'
 
 plugins:
   searx.plugins.hostnames.SXNGPlugin:
     active: true
 
 outgoing:
-  request_timeout: 4.0
-  max_request_timeout: 8.0
+  # Lowered from 4.0/8.0: a slow engine still holds up the page until it
+  # times out, and with the scrapers above disabled, everything left
+  # (mojeek, wikipedia, wikidata, google cse) reliably answers in well
+  # under 3s. If a future engine gets added and is consistently slower
+  # than this, that's a sign it belongs disabled, not a reason to raise
+  # the timeout back up for everyone.
+  request_timeout: 3.0
+  max_request_timeout: 6.0
   pool_connections: 100
   pool_maxsize: 20
   enable_http2: true

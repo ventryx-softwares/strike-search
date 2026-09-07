@@ -151,19 +151,33 @@
 
 /* Front page search box: on the results page it has to stay compact next to
  * the logo, but here it's the entire page's reason for existing, so give it
- * real presence -- a wider target, a visible resting shadow (not just on
- * hover), and an accent-coloured focus ring instead of the default's flat
- * border-on-hover-only. */
+ * real presence: a wider target and a visible resting shadow instead of the
+ * default's flat border-on-hover-only.
+ *
+ * Two bugs from the first pass here, both from the same cause: nothing
+ * clipped this box to its own rounded corners. `#q`'s native browser focus
+ * outline is a hard rectangle -- inside a 28px-radius pill, that outline's
+ * corners poked out past the visible edge as a stray line to the right of
+ * the box whenever the input was focused. And the accent glow ring
+ * (box-shadow spread) is what "the blue" was: a heavier effect than this
+ * page needs. Fixed by clipping the box and dropping the glow for a plain
+ * border-colour change on focus. */
 .index .search_box {
   max-width: 600px;
   margin: 2rem auto 0;
   box-shadow: 0 8px 28px rgba(0,0,0,.45);
   border-radius: 28px;
-  transition: box-shadow .15s ease, border-color .15s ease;
+  overflow: hidden;
+  transition: border-color .15s ease;
 }
 .index .search_box:focus-within {
   border-color: #4f7cff;
-  box-shadow: 0 8px 28px rgba(0,0,0,.45), 0 0 0 3px rgba(79,124,255,.25);
+}
+/* Keep a visible keyboard-focus indicator, just pulled inward so it can't
+ * poke past the pill's rounded corners the way the browser default did. */
+.index .search_box *:focus-visible {
+  outline: 2px solid #4f7cff;
+  outline-offset: -2px;
 }
 .index #q {
   padding-top: .85rem;
@@ -490,26 +504,81 @@ footer {
   box-shadow: inset 0 -2px 0 #4f7cff;
 }
 
+/* Settings rows: label on the left, control + description on the right,
+ * the way Windows' own Settings app lays out a preference -- a deliberate
+ * echo of the Segoe UI choice above, not a generic two-column form. Each
+ * fieldset's children are legend, then whatever control markup (a select,
+ * a checkbox, the category icon grid, ...), then .description; the grid
+ * below places legend in column 1 and everything else in column 2 without
+ * needing to know which control it is. */
 fieldset {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  column-gap: 1.5rem;
+  align-items: start;
   background: #161619;
   border: 1px solid rgba(255,255,255,.07);
   border-radius: 12px;
   padding: 1rem 1.25rem;
-  margin-bottom: .75rem;
+  margin-bottom: .6rem;
 }
 fieldset legend {
+  grid-column: 1;
   font-weight: 600;
-  padding: 0 .35rem;
+  padding: .4rem 0 0;
+}
+fieldset > *:not(legend) {
+  grid-column: 2;
+}
+fieldset .value {
+  display: flex;
+  align-items: center;
+  min-height: 2.2rem;
 }
 fieldset .description {
   color: #5d5d66;
   font-size: .85em;
   margin-top: .35rem;
 }
-fieldset select,
+
+/* Native <select> chrome doesn't match anything else here (different radius,
+ * different border, an OS-drawn arrow) -- flatten it and draw our own. */
+fieldset select {
+  appearance: none;
+  background: #1c1c21 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%239a9aa2' stroke-width='1.5'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") no-repeat right .75rem center;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 8px;
+  color: #f0f0f2;
+  padding: .5rem 2rem .5rem .75rem;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .12s ease;
+}
+fieldset select:hover {
+  border-color: rgba(255,255,255,.25);
+}
+fieldset select:focus-visible {
+  outline: none;
+  border-color: #4f7cff;
+}
 fieldset input[type="text"],
 fieldset input[type="password"] {
+  background: #1c1c21;
+  border: 1px solid rgba(255,255,255,.13);
   border-radius: 8px;
+  color: #f0f0f2;
+  padding: .5rem .75rem;
+}
+
+/* "Digital Object Identifier (DOI)" and similar: a section break between
+ * groups of fieldsets, not a setting itself -- previously rendered as a
+ * solid full-width highlighted bar, heavier than anything around it. */
+.pref-group {
+  color: #9a9aa2;
+  font-size: .95em;
+  font-weight: 600;
+  margin: 1.25rem 0 .5rem;
+  padding-left: .25rem;
 }
 
 #search_form button[type="submit"],

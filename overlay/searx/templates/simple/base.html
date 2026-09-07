@@ -22,7 +22,12 @@
   {% else %}
   <link rel="stylesheet" href="{{ url_for('static', filename='sxng-ltr.min.css') }}" type="text/css" media="screen">
   {% endif %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='strike-brand.css') }}" type="text/css" media="screen">
+  {# Cloudflare (search.ventryx.xyz) caches this for 4 hours by mtime/etag,
+     independent of Railway's own 30s edge cache -- a CSS edit alone doesn't
+     bust either. Bump this query param on every edit to this file so it's
+     a new URL, not a re-validation of the old cached one. Last bumped:
+     2026-09-07, results-page grid fix + About-link removal. #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='strike-brand.css') }}?v=5" type="text/css" media="screen">
   {% if get_setting('server.limiter') or get_setting('server.public_instance') %}
   <link rel="stylesheet" href="{{ url_for('client_token', token=link_token) }}" type="text/css">
   {% endif %}

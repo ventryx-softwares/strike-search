@@ -16,7 +16,15 @@ ARG PORT
 
 ENV BASE_URL=${SEARXNG_BASE_URL}
 ENV PORT=${PORT:-8080}
-ENV UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-4}
+# Each uwsgi worker is a separate Python process with its own copy of
+# SearXNG's loaded engine modules -- on the Railway free trial's RAM budget,
+# 4 workers means 4x the memory for an instance that only ever serves one
+# person at a time. Down from 4 to 2: still enough to handle one request
+# while another is in flight, without the duplicated memory pushing the
+# container toward its limit (which shows up as generalized slowness, not
+# a clean out-of-memory error). Override via SEARXNG_UWSGI_WORKERS if this
+# instance ever needs to handle real concurrent traffic.
+ENV UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-2}
 ENV UWSGI_THREADS=${SEARXNG_UWSGI_THREADS:-4}
 
 # Copied twice on purpose. The Railway service mounts a volume at
